@@ -6,7 +6,6 @@ function apply_MPC(x0, A, B, N, Q, R)
     x = Variable(n, N+1)
     u = Variable(m, N)
 
-
     # Define the dynamics constraints
     cost = 0
     for k in 1:N
