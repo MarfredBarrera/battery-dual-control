@@ -3,6 +3,7 @@ using Plots, LinearAlgebra
 #import Pkg; Pkg.add("Zygote"); Pkg.add("Convex"); Pkg.add("SCS")
 using Zygote
 using Convex, SCS
+using JLD2
 
 ##################################################
 
@@ -16,8 +17,8 @@ include("./simulate.jl")
 Initialize battery dynamics and measurement model.
 
 """
-n = 4 # Number of states
-m = 4 # Number of inputs
+n = 6 # Number of states
+m = 6 # Number of inputs
 η = 1 # Efficiency
 Q_nom = 2.2 # Nominal capacity
 dt = 1.0 # Discretization time
@@ -36,12 +37,30 @@ function measurement_dynamics(SOC)
     OCV_LTO = 2.5 + 0.3 * SOC[1] + 0.1 * tanh(8 * (SOC[1] - 0.5)) + 0.05 * sin(8 * π * SOC[1])   
     # LCO
     OCV_LCO = 3.7 + 0.5 * SOC[2] + 0.3 * sin(2 * π * SOC[2])
-    # Li
+
+    # Li=ion from Hao Wang et al. 2021,
+    "Lithium-Ion Battery SOC Estimation Based on Adaptive Forgetting Factor Least Squares Online Identification and Unscented Kalman Filter"
     OCV_Li = -43.1 * SOC[3]^6 + 155.4 * SOC[3]^5 - 215.7 * SOC[3]^4 + 146.6 * SOC[3]^3 - 50.16 * SOC[3]^2 + 8.674 * SOC[3] + 2.991
-    # Li exponential model
+
+    # Li-ion from Sundaresan et al. 2022,
+    "Tabular Open Circuit Voltage Modelling of Li-Ion Batteries for Robust SOC Estimation"
+    # Li-ion exponential model
     OCV_EXP = 3.679*exp(-0.1101*SOC[4]) - 0.2528*exp(-6.829*SOC[4]) + 0.9386*SOC[4]^2
-    
-    return [OCV_LTO; OCV_LCO; OCV_Li; OCV_EXP]
+    # Li-ionsum of sines model
+    OCV_SIN = 4.848*sin(1.512*SOC[4] + 0.5841) + 7.715*sin(4.756*SOC[4] + 1.99) + 6.655 * sin(4.928*SOC[4] + 5.038)
+
+    # Li-ion from Woo-Yong Kim et al. 2019,
+    "A Nonlinear-Model-Based Observer for a State-of-Charge Estimation of a Lithium-Ion Battery in Electric Vehicles"
+
+    OCV_Kim = 0.9878 + 0.32095*SOC[5] 
+    + 0.07*sin(1.90*SOC[5]-3.30) 
+    + 0.05*sin(0.3*SOC[5]+0.49) 
+    + 0.04*sin(3.39*SOC[5]-0.98)
+    + 0.02*sin(8.35*SOC[5]-1.27)
+    + 0.23*sin(10.01*SOC[5]+1.74) 
+    + 0.22*sin(10.10*SOC[5]-1.42)
+
+    return [OCV_LTO; OCV_LCO; OCV_Li; OCV_EXP; OCV_SIN; OCV_Kim]
 end
 
 """
@@ -60,7 +79,7 @@ Initialize the control sampler
 N = 6 # prediction horizon length
 Q = 1.0*I(n)
 R = 0.1 * I(m)
-set_point = [0.7, 0.7, 0.7, 0.7]
+set_point = [0.7, 0.7, 0.7, 0.7, 0.7, 0.7]
 running_cost = (x, cov, u) -> (x-set_point)' * Q * (x-set_point)  + tr(Q*cov) + u' * R * u
 CS = ControlSampler(eKF, N, running_cost)
 
@@ -73,7 +92,7 @@ x₀₀: initial state
 Σ₀₀: initial covariance matrix
 
 """
-x₀₀ = [0.1; 0.1; 0.1; 0.1]
+x₀₀ = [0.1; 0.1; 0.1; 0.1; 0.1; 0.1]
 Σ₀₀ = 0.1 * Matrix{Float64}(I, n, n)
 L = 100
 T = 50
@@ -176,3 +195,9 @@ println("Average Achieved Cost Change: % ", (sum(cost_rec)-sum(cost_rec_mpc)) / 
 println("Average Achieved Estimation Error Change: % ", (sum(est_err_rec) - sum(est_err_rec_mpc)) / sum(est_err_rec_mpc)*100)
 
 ##################################################
+
+
+SAVE_DATA = true
+if(SAVE_DATA)
+    @save "simulation_results.jld2" x_rec u_rec cov_rec x_true_rec cost_rec est_err_rec x_rec_mpc u_rec_mpc cov_rec_mpc x_true_rec_mpc cost_rec_mpc est_err_rec_mpc
+end

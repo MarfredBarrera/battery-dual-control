@@ -89,4 +89,5 @@ vline!(p4, [mean_cost_rec_mpc], label="Mean", color=:red, linestyle=:dash)
 plot(p1, p2, p3, p4, layout=plot_layout, size=(800, 600))
 # Combine the four histograms into a single plot
 
+savefig("histograms.png")
 
