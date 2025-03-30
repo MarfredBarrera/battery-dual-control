@@ -81,13 +81,19 @@ vline!(p3, [mean_cost_rec], label="Mean", color=:red, linestyle=:dash)
 
 p4 = histogram(cost_rec_mpc, 
     bins=bins_cost, 
-    label="MPC", 
+    label="Model Predictive Control", 
     color=:green, 
     xlabel="Cost", 
     ylabel="Frequency")
 vline!(p4, [mean_cost_rec_mpc], label="Mean", color=:red, linestyle=:dash)
-plot(p1, p2, p3, p4, layout=plot_layout, size=(800, 600))
+
+plot(p1, p3, p2, p4, 
+    layout=plot_layout, 
+    size=(800, 600), 
+    legend=:topleft,
+    legendfontsize=7)
+savefig("histograms.png")
 # Combine the four histograms into a single plot
 
-savefig("histograms.png")
+
 

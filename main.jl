@@ -52,13 +52,15 @@ function measurement_dynamics(SOC)
     # Li-ion from Woo-Yong Kim et al. 2019,
     "A Nonlinear-Model-Based Observer for a State-of-Charge Estimation of a Lithium-Ion Battery in Electric Vehicles"
 
-    OCV_Kim = 0.9878 + 0.32095*SOC[5] 
-    + 0.07*sin(1.90*SOC[5]-3.30) 
-    + 0.05*sin(0.3*SOC[5]+0.49) 
-    + 0.04*sin(3.39*SOC[5]-0.98)
-    + 0.02*sin(8.35*SOC[5]-1.27)
-    + 0.23*sin(10.01*SOC[5]+1.74) 
-    + 0.22*sin(10.10*SOC[5]-1.42)
+    # OCV_Kim = 0.9878 + 0.32095*SOC[5] 
+    # + 0.07*sin(1.90*SOC[5]-3.30) 
+    # + 0.05*sin(0.3*SOC[5]+0.49) 
+    # + 0.04*sin(3.39*SOC[5]-0.98)
+    # + 0.02*sin(8.35*SOC[5]-1.27)
+    # + 0.23*sin(10.01*SOC[5]+1.74) 
+    # + 0.22*sin(10.10*SOC[5]-1.42)
+
+    OCV_Kim = 3.151 + 0.401*SOC[5] + 4.1410*SOC[5]^2 + -26.228*SOC[5]^3 + 57.835*SOC[5]^4 - 55.688*SOC[5]^5 + 19.808*SOC[5]^6
 
     return [OCV_LTO; OCV_LCO; OCV_Li; OCV_EXP; OCV_SIN; OCV_Kim]
 end
@@ -96,7 +98,7 @@ x₀₀ = [0.1; 0.1; 0.1; 0.1; 0.1; 0.1]
 Σ₀₀ = 0.1 * Matrix{Float64}(I, n, n)
 L = 100
 T = 50
-num_simulations = 20
+num_simulations = 100
 
 
 # for recording results

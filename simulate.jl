@@ -5,7 +5,7 @@ function simulate_CS(x₀₀, Σ₀₀, T, L; u_noise_cov = 0.001)
     x_true = x₀₀ + sqrt(Σ₀₀) * randn(n)
     x_true = clamp.(x_true, 0.0, 1.0)
 
-    candidate_Us = [zeros(2, N) for _ in 1:L]
+    candidate_Us = [zeros(m, N) for _ in 1:L]
     X_rec = [x₀₀ for _ in 1:T]
     U_rec = [x₀₀ for _ in 1:T]
     Σ_rec = [Σ₀₀ for _ in 1:T]
