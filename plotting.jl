@@ -13,6 +13,12 @@ mean_cost_rec_mpc = sum(cost_rec_mpc)/num_simulations
 
 x1 = [x_rec[1][t][1] for t in 1:T]
 x2 = [x_rec[1][t][2] for t in 1:T]
+x3 = [x_rec[1][t][3] for t in 1:T]
+x4 = [x_rec[1][t][4] for t in 1:T]
+x5 = [x_rec[1][t][5] for t in 1:T]
+x6 = [x_rec[1][t][6] for t in 1:T]
+
+
 
 x1_mpc = [x_rec_mpc[1][t][1] for t in 1:T]
 x2_mpc = [x_rec_mpc[1][t][2] for t in 1:T]
@@ -31,6 +37,15 @@ var1_mpc = [variance_mpc[k][1] for k in 1:T]
 var2_mpc = [variance_mpc[k][2] for k in 1:T]
 
 
+plot(x1)
+plot!(x2)
+plot!(x3)
+plot!(x4)
+plot!(x5)
+plot!(x6)
+# plot(x1+x2+x3+x4+x5+x6, label="Stochastic Optimal Control", color=:blue, xlabel="Time Step", ylabel="State")
+
+
 # plot(1:T, var1, label="x1 variance", color=:blue, xlabel="Time Step", ylabel="Variance")
 # plot!(1:T, var1_mpc, label="x1 variance MPC", color=:green, xlabel="Time Step", ylabel="Variance")
 
@@ -38,61 +53,61 @@ var2_mpc = [variance_mpc[k][2] for k in 1:T]
 # plot!(running_cost_mpc, label = "MPC", color = :green, legend = :topright)
 
 # Create a 2x2 layout for the subplots
-plot_layout = @layout [a b; c d]
+# plot_layout = @layout [a b; c d]
 
 
-# Define consistent bin edges for estimation error histograms
-num_bins = 21
-min_estimation = minimum([minimum(est_err_rec), minimum(est_err_rec_mpc)])
-max_estimation = maximum([maximum(est_err_rec), maximum(est_err_rec_mpc)])
-bins_estimation = range(0, (max_estimation + (max_estimation - min_estimation) / (num_bins - 1)), length=num_bins)
+# # Define consistent bin edges for estimation error histograms
+# num_bins = 21
+# min_estimation = minimum([minimum(est_err_rec), minimum(est_err_rec_mpc)])
+# max_estimation = maximum([maximum(est_err_rec), maximum(est_err_rec_mpc)])
+# bins_estimation = range(0, (max_estimation + (max_estimation - min_estimation) / (num_bins - 1)), length=num_bins)
 
-# Define consistent bin edges for cost histograms
-min_cost = minimum([minimum(cost_rec), minimum(cost_rec_mpc)])
-max_cost = maximum([maximum(cost_rec), maximum(cost_rec_mpc)])
-bins_cost = range(0, max_cost + (max_cost - min_cost) / (num_bins - 1), length=num_bins)  # Add one extra bin to the right
+# # Define consistent bin edges for cost histograms
+# min_cost = minimum([minimum(cost_rec), minimum(cost_rec_mpc)])
+# max_cost = maximum([maximum(cost_rec), maximum(cost_rec_mpc)])
+# bins_cost = range(0, max_cost + (max_cost - min_cost) / (num_bins - 1), length=num_bins)  # Add one extra bin to the right
 
-# Individual histograms with vertical dashed lines for means
-p1 = histogram(est_err_rec, 
-    bins=bins_estimation, 
-    label="Stochastic Optimal Control", 
-    color=:blue, 
-    xlabel="Estimation Error", 
-    ylabel="Frequency",
-    legend=:topright)
-vline!(p1, [mean_est_err_rec], label="Mean", color=:red, linestyle=:dash)
+# # Individual histograms with vertical dashed lines for means
+# p1 = histogram(est_err_rec, 
+#     bins=bins_estimation, 
+#     label="Stochastic Optimal Control", 
+#     color=:blue, 
+#     xlabel="Estimation Error", 
+#     ylabel="Frequency",
+#     legend=:topright)
+# vline!(p1, [mean_est_err_rec], label="Mean", color=:red, linestyle=:dash)
 
-p2 = histogram(est_err_rec_mpc, 
-    bins=bins_estimation, 
-    label="Model Predictive Control", 
-    color=:green, 
-    xlabel="Estimation Error", 
-    ylabel="Frequency",
-    legend=:topright)
-vline!(p2, [mean_est_err_rec_mpc], label="Mean", color=:red, linestyle=:dash)
+# p2 = histogram(est_err_rec_mpc, 
+#     bins=bins_estimation, 
+#     label="Model Predictive Control", 
+#     color=:green, 
+#     xlabel="Estimation Error", 
+#     ylabel="Frequency",
+#     legend=:topright)
+# vline!(p2, [mean_est_err_rec_mpc], label="Mean", color=:red, linestyle=:dash)
 
-p3 = histogram(cost_rec, 
-    bins=bins_cost, 
-    label="Stochastic Optimal Control", 
-    color=:blue, 
-    xlabel="Cost", 
-    ylabel="Frequency")
-vline!(p3, [mean_cost_rec], label="Mean", color=:red, linestyle=:dash)
+# p3 = histogram(cost_rec, 
+#     bins=bins_cost, 
+#     label="Stochastic Optimal Control", 
+#     color=:blue, 
+#     xlabel="Cost", 
+#     ylabel="Frequency")
+# vline!(p3, [mean_cost_rec], label="Mean", color=:red, linestyle=:dash)
 
-p4 = histogram(cost_rec_mpc, 
-    bins=bins_cost, 
-    label="Model Predictive Control", 
-    color=:green, 
-    xlabel="Cost", 
-    ylabel="Frequency")
-vline!(p4, [mean_cost_rec_mpc], label="Mean", color=:red, linestyle=:dash)
+# p4 = histogram(cost_rec_mpc, 
+#     bins=bins_cost, 
+#     label="Model Predictive Control", 
+#     color=:green, 
+#     xlabel="Cost", 
+#     ylabel="Frequency")
+# vline!(p4, [mean_cost_rec_mpc], label="Mean", color=:red, linestyle=:dash)
 
-plot(p1, p3, p2, p4, 
-    layout=plot_layout, 
-    size=(800, 600), 
-    legend=:topleft,
-    legendfontsize=7)
-savefig("histograms.png")
+# plot(p1, p3, p2, p4, 
+#     layout=plot_layout, 
+#     size=(800, 600), 
+#     legend=:topleft,
+#     legendfontsize=7)
+# savefig("histograms.png")
 # Combine the four histograms into a single plot
 
 

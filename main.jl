@@ -81,8 +81,9 @@ Initialize the control sampler
 N = 6 # prediction horizon length
 Q = 1.0*I(n)
 R = 0.1 * I(m)
-set_point = [0.7, 0.7, 0.7, 0.7, 0.7, 0.7]
+set_point = [0.8, 0.8, 0.8, 0.8, 0.8, 0.8]
 running_cost = (x, cov, u) -> (x-set_point)' * Q * (x-set_point)  + tr(Q*cov) + u' * R * u
+# running_cost = (x, cov, u) -> Q[1,1]*(sum(x)-set_point)^2  + tr(Q*cov) + u' * R * u
 CS = ControlSampler(eKF, N, running_cost)
 
 """
@@ -98,8 +99,7 @@ x₀₀ = [0.1; 0.1; 0.1; 0.1; 0.1; 0.1]
 Σ₀₀ = 0.1 * Matrix{Float64}(I, n, n)
 L = 100
 T = 50
-num_simulations = 100
-
+num_simulations = 200
 
 # for recording results
 cost_rec = zeros(num_simulations)

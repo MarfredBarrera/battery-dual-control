@@ -9,9 +9,12 @@ function apply_MPC(x0, A, B, N, Q, R)
     # Define the dynamics constraints
     cost = 0
     for k in 1:N
-        cost += quadform((x[1, k] + x[2, k] - set_point), [Q[1,1];;]; assume_psd=true) + quadform(u[:, k], R; assume_psd=true)
+        # cost += quadform((x[1, k] + x[2, k] - set_point), [Q[1,1];;]; assume_psd=true) + quadform(u[:, k], R; assume_psd=true)
+        cost += quadform(((x[:,k]) - set_point), [Q[1,1];;]; assume_psd=true) + quadform(u[:, k], R; assume_psd=true)
     end
-    cost += quadform((x[1, N+1] + x[2, N+1] - set_point), [Q[1,1];;]; assume_psd=true)
+    # cost += quadform((x[1, N+1] + x[2, N+1] - set_point), [Q[1,1];;]; assume_psd=true)
+    cost += quadform(((x[:,N+1]) - set_point), [Q[1,1];;]; assume_psd=true)
+
     # Define the cost function
     problem = minimize(cost)
     
