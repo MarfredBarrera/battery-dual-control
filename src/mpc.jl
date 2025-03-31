@@ -26,6 +26,6 @@ function apply_MPC(x0, A, B, N, Q, R)
         problem.constraints += 0.0 <= x[:, k+1]
         problem.constraints += x[:, k+1] <= 1.0
     end
-    solve!(problem, SCS.Optimizer; silent_solver = true)
+    solve!(problem, SCS.Optimizer; silent = true)
     return u.value, x.value
 end

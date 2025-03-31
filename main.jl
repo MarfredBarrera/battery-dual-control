@@ -60,9 +60,10 @@ function measurement_dynamics(SOC)
     # + 0.23*sin(10.01*SOC[5]+1.74) 
     # + 0.22*sin(10.10*SOC[5]-1.42)
 
-    OCV_Kim = 3.151 + 0.401*SOC[5] + 4.1410*SOC[5]^2 + -26.228*SOC[5]^3 + 57.835*SOC[5]^4 - 55.688*SOC[5]^5 + 19.808*SOC[5]^6
+    # Li-ion polynomial model from Zhao et al. 
+    OCV_Zhao = 3.151 + 0.401*SOC[5] + 4.1410*SOC[5]^2 + -26.228*SOC[5]^3 + 57.835*SOC[5]^4 - 55.688*SOC[5]^5 + 19.808*SOC[5]^6
 
-    return [OCV_LTO; OCV_LCO; OCV_Li; OCV_EXP; OCV_SIN; OCV_Kim]
+    return [OCV_LTO; OCV_LCO; OCV_Li; OCV_EXP; OCV_SIN; OCV_Zhao]
 end
 
 """
@@ -99,7 +100,7 @@ x₀₀ = [0.1; 0.1; 0.1; 0.1; 0.1; 0.1]
 Σ₀₀ = 0.1 * Matrix{Float64}(I, n, n)
 L = 100
 T = 50
-num_simulations = 200
+num_simulations = 500
 
 # for recording results
 cost_rec = zeros(num_simulations)
@@ -199,7 +200,7 @@ println("Average Achieved Estimation Error Change: % ", (sum(est_err_rec) - sum(
 ##################################################
 
 
-SAVE_DATA = true
+SAVE_DATA = false
 if(SAVE_DATA)
     @save "simulation_results.jld2" x_rec u_rec cov_rec x_true_rec cost_rec est_err_rec x_rec_mpc u_rec_mpc cov_rec_mpc x_true_rec_mpc cost_rec_mpc est_err_rec_mpc
 end
