@@ -1,13 +1,13 @@
 using JLD2
 using Statistics
 using LaTeXStrings
-@load "simulation_results_n500.jld2" x_rec u_rec cov_rec x_true_rec cost_rec est_err_rec x_rec_mpc u_rec_mpc cov_rec_mpc x_true_rec_mpc cost_rec_mpc est_err_rec_mpc
+@load "sim_ocv6_n200.jld2" x_rec u_rec cov_rec x_true_rec cost_rec est_err_rec x_rec_mpc u_rec_mpc cov_rec_mpc x_true_rec_mpc cost_rec_mpc est_err_rec_mpc
 
 ### Grab required parameters from main.jl
 num_simulations = length(x_rec)
 T = length(x_rec[1])
 n = length(x_rec[1][1])
-set_point = [0.8, 0.8, 0.8, 0.8, 0.8, 0.8]
+set_point = 0.8*ones(n)
 running_cost = (x, cov, u) -> (x-set_point)' * Q * (x-set_point)  + tr(Q*cov) + u' * R * u
 
 # Calculate means
@@ -27,12 +27,12 @@ function histograms()
     num_bins = 21
     min_estimation = minimum([minimum(est_err_rec), minimum(est_err_rec_mpc)])
     max_estimation = maximum([maximum(est_err_rec), maximum(est_err_rec_mpc)])
-    bins_estimation = range(0, (max_estimation + (max_estimation - min_estimation) / (num_bins - 1)), length=num_bins)
+    bins_estimation = range(min_estimation, (max_estimation + (max_estimation - min_estimation) / (num_bins - 1)), length=num_bins)
 
     # Define consistent bin edges for cost histograms
     min_cost = minimum([minimum(cost_rec), minimum(cost_rec_mpc)])
     max_cost = maximum([maximum(cost_rec), maximum(cost_rec_mpc)])
-    bins_cost = range(0, max_cost + (max_cost - min_cost) / (num_bins - 1), length=num_bins)  # Add one extra bin to the right
+    bins_cost = range(min_cost, max_cost + (max_cost - min_cost) / (num_bins - 1), length=num_bins)  # Add one extra bin to the right
 
     # Individual histograms with vertical dashed lines for means
     p1 = histogram(est_err_rec, 
@@ -72,9 +72,9 @@ function histograms()
     plot(p1, p3, p2, p4, 
         layout=plot_layout, 
         size=(800, 600), 
-        legend=:topleft,
+        legend=:topright,
         legendfontsize=7)
-    savefig("./saved_plots/histograms.png")
+    savefig("./histograms.png")
 
 end
 
@@ -108,7 +108,7 @@ function simulation_averaged_cost()
     label="Stochastic Optimal Control", color=:blue)
     plot!(1:T, avg_running_cost_mpc, label="Model Predictive Control", color=:green)
 
-    savefig("./saved_plots/average_running_cost.png")
+    savefig("./average_running_cost.png")
 end
 
 
@@ -140,7 +140,7 @@ function simulation_averaged_estimation_err()
     label="Model Predictive Control", 
     color=:green)
 
-    savefig("./saved_plots/estimation_error.png")
+    savefig("./estimation_error.png")
 
 end
 
@@ -181,10 +181,98 @@ function simulation_averaged_covariance()
 
     ylims!(0.0,0.05)
 
-    savefig("./saved_plots/covariance.png")
+    savefig("./covariance.png")
 end
+
+function plot_OCV_SOC()
+    # Define the SOC range
+    SOC_range = 0:0.01:1  # SOC values from 0 to 1 with a step of 0.01
+
+    # Compute OCV values for each SOC in the range
+    OCV_values = [measurement_dynamics([SOC, SOC, SOC, SOC, SOC, SOC]) for SOC in SOC_range]
+    OCV_values = reduce(hcat, OCV_values)  # Combine into a matrix for easier plotting
+
+    # Plot each OCV-SOC curve
+    plot(
+        SOC_range, OCV_values[1, :], 
+        label="Lithium-Ion, Wang", 
+        linewidth=2, 
+        linestyle=:solid, 
+        color=:blue
+    )
+    plot!(
+        SOC_range, OCV_values[2, :], 
+        label="Lithium-Ion, Zhang, Exponential", 
+        linewidth=2, 
+        linestyle=:dash, 
+        color=:red
+    )
+    plot!(
+        SOC_range, OCV_values[3, :], 
+        label="Lithium-Ion, Zhang, Sum of Sines",
+        linewidth=2, 
+        linestyle=:dot, 
+        color=:green
+    )
+    plot!(
+        SOC_range, OCV_values[4, :], 
+        label="Lithium-Ion, Zhao, Battery 1", 
+        linewidth=2, 
+        linestyle=:dashdot, 
+        color=:purple
+    )
+    plot!(
+        SOC_range, OCV_values[5, :], 
+        label="Lithium-Ion, Zhao, Battery 2", 
+        linewidth=2, 
+        linestyle=:solid, 
+        color=:orange
+    )
+    plot!(
+        SOC_range, OCV_values[6, :], 
+        label="Lithium Titanate Oxide, Stroe", 
+        linewidth=2, 
+        linestyle=:solid, 
+        color=:cyan
+    )
+
+    # plot!(
+    #     SOC_range, OCV_values[7, :], 
+    #     label="LTO, tanh", 
+    #     linewidth=2, 
+    #     linestyle=:solid, 
+    #     color=:magenta
+    # )
+    # plot!(
+    #     SOC_range, OCV_values[8, :], 
+    #     label="LCO, sin", 
+    #     linewidth=2, 
+    #     linestyle=:solid, 
+    #     color=:brown
+    # )
+
+    # # Add plot aesthetics
+    # plot!(
+    #     xlabel="State of Charge (SOC)", 
+    #     ylabel="Open Circuit Voltage (OCV)", 
+    #     title="OCV-SOC Curves for Observation Models", 
+    #     legend=:topright, 
+    #     grid=:on, 
+    #     framestyle=:box, 
+    #     size=(800, 600), 
+    #     tickfontsize=10, 
+    #     guidefontsize=12, 
+    #     titlefontsize=14
+    # )
+
+    # Save the plot
+    savefig("./OCV.png")
+end
+
 
 histograms()
 simulation_averaged_cost()
 simulation_averaged_covariance()
 simulation_averaged_estimation_err()
+plot_OCV_SOC()
+
