@@ -97,7 +97,7 @@ x₀₀ = 0.1*ones(n)
 Σ₀₀ = 0.1 * Matrix{Float64}(I, n, n)
 L = 100
 T = 50
-num_simulations = 200
+num_simulations = 250
 
 # for recording results
 cost_rec = zeros(num_simulations)
@@ -197,7 +197,7 @@ println("Average Achieved Estimation Error Change: % ", (sum(est_err_rec) - sum(
 ##################################################
 
 
-SAVE_DATA = false
+SAVE_DATA = true
 if(SAVE_DATA)
     @save "simulation_results.jld2" x_rec u_rec cov_rec x_true_rec cost_rec est_err_rec x_rec_mpc u_rec_mpc cov_rec_mpc x_true_rec_mpc cost_rec_mpc est_err_rec_mpc
 end

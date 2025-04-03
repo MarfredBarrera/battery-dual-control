@@ -1,7 +1,7 @@
 using JLD2
 using Statistics
 using LaTeXStrings
-@load "sim_ocv6_n200.jld2" x_rec u_rec cov_rec x_true_rec cost_rec est_err_rec x_rec_mpc u_rec_mpc cov_rec_mpc x_true_rec_mpc cost_rec_mpc est_err_rec_mpc
+@load "simulation_results.jld2" x_rec u_rec cov_rec x_true_rec cost_rec est_err_rec x_rec_mpc u_rec_mpc cov_rec_mpc x_true_rec_mpc cost_rec_mpc est_err_rec_mpc
 
 ### Grab required parameters from main.jl
 num_simulations = length(x_rec)
@@ -20,7 +20,7 @@ mean_cost_rec_mpc = sum(cost_rec_mpc)/num_simulations
 ### Use to plot histograms of cost and estimation error to compare both methods
 function histograms()
     # Create a 2x2 layout for the subplots
-    plot_layout = @layout [a b; c d]
+    plot_layout = @layout [a b]
 
 
     # Define consistent bin edges for estimation error histograms
@@ -42,7 +42,8 @@ function histograms()
         xlabel="Estimation Error", 
         ylabel="Frequency",
         legend=:topright)
-    vline!(p1, [mean_est_err_rec], label="Mean", color=:red, linestyle=:dash)
+    vline!(p1, [mean_est_err_rec], label="Mean", color=:red, linestyle=:dash, linewidth=1.5)
+    ylims!(0.0,60)
 
     p2 = histogram(est_err_rec_mpc, 
         bins=bins_estimation, 
@@ -51,7 +52,9 @@ function histograms()
         xlabel="Estimation Error", 
         ylabel="Frequency",
         legend=:topright)
-    vline!(p2, [mean_est_err_rec_mpc], label="Mean", color=:red, linestyle=:dash)
+    vline!(p2, [mean_est_err_rec_mpc], label="Mean", color=:red, linestyle=:dash, linewidth=1.5)
+    ylims!(0.0,60)
+
 
     p3 = histogram(cost_rec, 
         bins=bins_cost, 
@@ -59,7 +62,8 @@ function histograms()
         color=:blue, 
         xlabel="Cost", 
         ylabel="Frequency")
-    vline!(p3, [mean_cost_rec], label="Mean", color=:red, linestyle=:dash)
+    vline!(p3, [mean_cost_rec], label="Mean", color=:red, linestyle=:dash,linewidth=1.5)
+    ylims!(0.0,60)
 
     p4 = histogram(cost_rec_mpc, 
         bins=bins_cost, 
@@ -67,14 +71,21 @@ function histograms()
         color=:green, 
         xlabel="Cost", 
         ylabel="Frequency")
-    vline!(p4, [mean_cost_rec_mpc], label="Mean", color=:red, linestyle=:dash)
+    vline!(p4, [mean_cost_rec_mpc], label="Mean", color=:red, linestyle=:dash,linewidth=1.5)
+    ylims!(0.0,60)
 
-    plot(p1, p3, p2, p4, 
+    plot(p1, p3,
         layout=plot_layout, 
-        size=(800, 600), 
         legend=:topright,
         legendfontsize=7)
-    savefig("./histograms.png")
+    savefig("./SOC_histograms.png")
+
+    plot(p2,p4,
+        layout=plot_layout, 
+        legend=:topright,
+        legendfontsize=7)
+
+    savefig("./MPC_histograms.png")
 
 end
 
@@ -108,6 +119,7 @@ function simulation_averaged_cost()
     label="Stochastic Optimal Control", color=:blue)
     plot!(1:T, avg_running_cost_mpc, label="Model Predictive Control", color=:green)
 
+    ylims!(0.0,0.3)
     savefig("./average_running_cost.png")
 end
 
@@ -265,7 +277,9 @@ function plot_OCV_SOC()
     #     titlefontsize=14
     # )
 
-    # Save the plot
+xlabel!("State of Charge (SOC)")
+ylabel!("Open Circuit Voltage (OCV)")
+# Save the plot
     savefig("./OCV.png")
 end
 
